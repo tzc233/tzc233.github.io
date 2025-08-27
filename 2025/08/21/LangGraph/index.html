@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta name="x5-fullscreen" content="true">
+<meta name="full-screen" content="yes">
+<meta name="theme-color" content="#317EFB" />
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=0" name="viewport">
+<meta name="description" content="一、基础理解（必考）1) LangGraph 是什么？与 LangChain 的关系？标准回答：LangGraph 是在 LangChain 之上、专注于 Agentic Workflow（智能体工作流） 的有向图（DAG&#x2F;状态机）框架。它用 State &#x2F; Node &#x2F; Edge &#x2F; Graph 来描述复杂多轮流程与分支，并提供持久化（persistenc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LangGraph">
+<meta property="og:url" content="http://tzc233.github.io/2025/08/21/LangGraph/index.html">
+<meta property="og:site_name" content="Tangtang&#39;s space">
+<meta property="og:description" content="一、基础理解（必考）1) LangGraph 是什么？与 LangChain 的关系？标准回答：LangGraph 是在 LangChain 之上、专注于 Agentic Workflow（智能体工作流） 的有向图（DAG&#x2F;状态机）框架。它用 State &#x2F; Node &#x2F; Edge &#x2F; Graph 来描述复杂多轮流程与分支，并提供持久化（persistenc">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-08-21T03:11:36.000Z">
+<meta property="article:modified_time" content="2025-08-27T03:43:13.778Z">
+<meta property="article:author" content="Zhichen Tang">
+<meta property="article:tag" content="LLM">
+<meta name="twitter:card" content="summary">
+
+
+<title >LangGraph</title>
+
+<!-- Favicon -->
+
+    <link href='/img/favicon.svg?v=2.2.6' rel='icon' type='image/png' sizes='16x16' ></link>
+
+
+    <link href='/img/favicon.svg?v=2.2.6' rel='icon' type='image/png' sizes='32x32' ></link>
+
+
+
+
+<!-- Plugin -->
+
+
+
+
+    
+<link rel="stylesheet" href="/css/plugins/bootstrap.row.css">
+
+    
+<link rel="stylesheet" href="https://unpkg.com/@fancyapps/ui@4.0/dist/fancybox.css">
+
+    
+    
+
+
+
+
+<!-- Icon -->
+
+    
+<link rel="stylesheet" href="/css/plugins/font-awesome.min.css">
+
+
+
+
+<!-- Variable -->
+<script>window.ASYNC_CONFIG = {"hostname":"tzc233.github.io","author":"Zhichen Tang","root":"/","typed_text":["welcome to my blog!"],"theme_version":"2.2.6","theme":{"switch":true,"default":"auto"},"favicon":{"logo":"/img/favicon.svg","icon16":"/img/favicon.svg","icon32":"/img/favicon.svg","apple_touch_icon":null,"webmanifest":null,"visibilitychange":false,"hidden":"/failure.ico","show_text":"(/≧▽≦/)咦！又好了！","hide_text":"(●—●)喔哟，崩溃啦！"},"i18n":{"placeholder":"搜索文章...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）","author":"本文作者：","copyright_link":"本文链接：","copyright_license_title":"版权声明：","copyright_license_content":"本博客所有文章除特别声明外，均默认采用 undefined 许可协议。","copy_success":"复制成功","copy_failure":"复制失败","open_read_mode":"进入阅读模式","exit_read_mode":"退出阅读模式","notice_outdate_message":"距离上次更新已经 undefined 天了, 文章内容可能已经过时。","sticky":"置顶","just":"刚刚","min":"分钟前","hour":"小时前","day":"天前","month":"个月前"},"swup":false,"plugin":{"flickr_justified_gallery":"https://unpkg.com/flickr-justified-gallery@latest/dist/fjGallery.min.js"},"icons":{"sun":"far fa-sun","moon":"far fa-moon","play":"fas fa-play","email":"far fa-envelope","next":"fas fa-arrow-right","calendar":"far fa-calendar-alt","clock":"far fa-clock","user":"far fa-user","back_top":"fas fa-arrow-up","close":"fas fa-times","search":"fas fa-search","reward":"fas fa-hand-holding-usd","toc_tag":"fas fa-th-list","read":"fas fa-book-reader","arrows":"fas fa-arrows-alt-h","double_arrows":"fas fa-angle-double-down","copy":"fas fa-copy"},"icontype":"font","highlight":{"plugin":"highlighjs","theme":true,"copy":true,"lang":true,"title":"default","height_limit":false},"toc":{"post_title":true},"live_time":{"start_time":"05/20/2025 00:00:00","prefix":"博客已萌萌哒运行 undefined 天"},"danmu":{"enable":false,"el":".trm-banner"}};</script>
+<script id="async-page-config">window.PAGE_CONFIG = {"isPost":true,"isHome":false,"postUpdate":"2025-08-27 11:43:13"};</script>
+
+<!-- Theme mode css -->
+<link data-swup-theme rel="stylesheet" href="/css/index.css?v=2.2.6" id="trm-switch-style">
+<script>
+    let defaultMode = ASYNC_CONFIG.theme.default !=='auto' ?  ASYNC_CONFIG.theme.default : (window.matchMedia("(prefers-color-scheme: light)").matches ? 'style-light' : 'style-dark')
+    let catchMode = localStorage.getItem('theme-mode') || defaultMode;
+    let type = catchMode === 'style-dark' ? 'add' : 'remove';
+    document.documentElement.classList[type]('dark')
+</script>
+
+<!-- CDN -->
+
+
+    
+    
+
+
+
+<!-- Site Analytics -->
+
+ 
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+
+  <!-- app wrapper -->
+  <div class="trm-app-frame">
+
+    <!-- page preloader -->
+    <div class="trm-preloader">
+    <div class="trm-holder">
+        <div class="preloader">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+</div>
+    <!-- page preloader end -->
+
+    <!-- change mode preloader -->
+    <div class="trm-mode-swich-animation-frame">
+    <div class="trm-mode-swich-animation">
+        <i class="i-sun"><i class="iconfont far fa-sun"></i></i>
+        <div class="trm-horizon"></div>
+        <i class="i-moon"><i class="iconfont far fa-moon"></i></i>
+    </div>
+</div>
+    <!-- change mode preloader end -->
+
+      <!-- scroll container -->
+      <div id="trm-dynamic-content" class="trm-swup-animation">
+        <div id="trm-scroll-container" class="trm-scroll-container" style="opacity: 0">
+            <!-- top bar -->
+            <header class="trm-top-bar">
+	<div class="container">
+		<div class="trm-left-side">
+			<!-- logo -->
+<a href="/" class="trm-logo-frame trm-anima-link">
+    
+        <img alt="logo" src="/img/favicon.svg">
+    
+    
+        <div class="trm-logo-text">
+            Tang<span>Zhichen</span>
+        </div>
+    
+</a>
+<!-- logo end -->
+		</div>
+		<div class="trm-right-side">
+			<!-- menu -->
+<div class="trm-menu">
+    <nav>
+        <ul>
+            
+            <li class="menu-item-has-children ">
+                <a  href="/" target="">
+                    首页
+                </a>
+                
+            </li>
+            
+            <li class="menu-item-has-children ">
+                <a  href="/archives/" target="">
+                    归档
+                </a>
+                
+            </li>
+            
+        </ul>
+    </nav>
+</div>
+<!-- menu end -->
+			
+    <!-- mode switcher place -->
+    <div class="trm-mode-switcher-place">
+        <div class="trm-mode-switcher">
+            <i class="iconfont far fa-sun"></i>
+            <input class="tgl tgl-light" id="trm-swich" type="checkbox">
+            <label class="trm-swich" for="trm-swich"></label>
+            <i class="iconfont far fa-moon"></i>
+        </div>
+    </div>
+    <!-- mode switcher place end -->
+
+			
+		</div>
+		<div class="trm-menu-btn">
+			<span></span>
+		</div>
+	</div>
+</header>
+            <!-- top bar end -->
+
+            <!-- body -->
+            
+<div class="trm-content-start">
+    <!-- banner -->
+    <div class="trm-banner">
+    
+    <!-- banner cover -->
+    <img style="object-position:top;object-fit:cover;" alt="banner" class="trm-banner-cover" src="/img/bg4.png">
+    <!-- banner cover end -->
+    
+
+    <!-- banner content -->
+    <div class="trm-banner-content trm-overlay">
+        <div class="container">
+            <div class="row">
+                
+                <div class="col-lg-4"></div>
+                
+                <div class="col-lg-8">
+
+                    <!-- banner title -->
+                    <div class="trm-banner-text ">
+                        <div class="trm-label trm-mb-20">
+                            NEWS LETTER
+                        </div>
+                        <h1 class="trm-mb-30 trm-hsmb-font">
+                            LangGraph
+                        </h1>
+
+                        
+                            <ul class="trm-breadcrumbs trm-label">
+                                <li>
+                                    <a href="/" class="trm-anima-link">Home</a>
+                                </li>
+                                <li>
+                                    <span>
+                                        2025
+                                    </span>
+                                </li>
+                            </ul>
+                        
+                    </div>
+                    <!-- banner title end -->
+
+                    <!-- scroll hint -->
+                    <span id="scroll-triger" class="trm-scroll-hint-frame">
+                        <div class="trm-scroll-hint"></div>
+                        <span class="trm-label">Scroll down</span>
+                    </span>
+                    <!-- scroll hint end -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- banner content end -->
+</div>
+    <!-- banner end -->
+    <div class="container">
+        <div class="row">
+            
+                <div class="trm-page-sidebar col-lg-4 hidden-sm">
+                    <!-- main card -->
+                    <div class="trm-main-card-frame trm-sidebar">
+    <div class="trm-main-card"> 
+        <!-- card header -->
+<div class="trm-mc-header">
+    <div class="trm-avatar-frame trm-mb-20">
+        <img alt="Avatar" class="trm-avatar trm-light-icon" src="/img/tx5.jpg"> <img alt="Avatar" class="trm-avatar trm-dark-icon" src="/img/tx3.jpg">
+    </div>
+    <h5 class="trm-name trm-mb-15">
+        帅帅
+    </h5>
+    
+        <div class="trm-label">
+            
+            <span class="trm-typed-text">
+                <!-- Words for theme.user.typedText -->
+            </span>
+        </div>
+    
+</div>
+<!-- card header end -->
+        <!-- sidebar social -->
+
+<div class="trm-divider trm-mb-40 trm-mt-40"></div>
+<div class="trm-social">
+    
+        <a href="https://github.com/tzc233" title="github" rel="nofollow" target="_blank">
+            <i class="iconfont fab fa-github"></i>
+        </a>
+    
+</div>
+
+<!-- sidebar social end -->
+        <!-- info -->
+<div class="trm-divider trm-mb-40 trm-mt-40"></div>
+<ul class="trm-table trm-mb-20">
+    
+        <li>
+            <div class="trm-label">
+                Address:
+            </div>
+            <div class="trm-label trm-label-light">
+                Shanghai, China
+            </div>
+        </li>
+    
+</ul>
+<!-- info end -->
+
+        
+    <div class="trm-divider trm-mb-40 trm-mt-40"></div>
+    <!-- action button -->
+    <div class="text-center">
+        <a href="mailto:tzc233@sjtu.edu.cn" class="trm-btn">
+            联系我
+            <i class="iconfont far fa-envelope"></i>
+        </a>
+    </div>
+    <!-- action button end -->
+
+    </div>
+</div>
+                    <!-- main card end -->
+                </div>
+            
+            <div class="trm-page-content col-lg-8">
+                <div id="trm-content" class="trm-content">
+                    <div class="trm-post-info row hidden-sm">
+    <div class="col-sm-4">
+        <div class="trm-card trm-label trm-label-light text-center">
+            <i class="iconfont far fa-calendar-alt trm-icon"></i><br>
+            08/21
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="trm-card trm-label trm-label-light text-center">
+            <i class="iconfont far fa-clock trm-icon"></i><br>
+            11:11
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div id="post-author" class="trm-card trm-label trm-label-light text-center">
+            <i class="iconfont far fa-user trm-icon"></i><br>
+            Zhichen Tang
+        </div>
+    </div>
+</div>
+<div class="trm-card ">
+    <article id="article-container" class="trm-publication">
+    <h1 id="一、基础理解（必考）"><a href="#一、基础理解（必考）" class="headerlink" title="一、基础理解（必考）"></a><strong>一、基础理解（必考）</strong></h1><h3 id="1-LangGraph-是什么？与-LangChain-的关系？"><a href="#1-LangGraph-是什么？与-LangChain-的关系？" class="headerlink" title="1) LangGraph 是什么？与 LangChain 的关系？"></a>1) LangGraph 是什么？与 LangChain 的关系？</h3><p><strong>标准回答：</strong><br>LangGraph 是在 LangChain 之上、专注于 <strong>Agentic Workflow（智能体工作流）</strong> 的<strong>有向图（DAG&#x2F;状态机）框架</strong>。它用 <strong>State &#x2F; Node &#x2F; Edge &#x2F; Graph</strong> 来描述复杂多轮流程与分支，并提供<strong>持久化（persistence&#x2F;checkpointer）<strong>以支持长对话、人工介入、容错与“时间旅行”。而 LangChain 更像是</strong>组件库与可组合的可运行单元（Runnables&#x2F;Chains&#x2F;Agents&#x2F;Tools）</strong>。在复杂流程里，我会用 LangGraph 编排整体流转，用 LangChain 提供 LLM 与工具能力。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/low_level/?utm_source=chatgpt.com" title="LangGraph Glossary - Overview">LangChain AI</a>, <a target="_blank" rel="noopener" href="https://blog.langchain.com/langgraph/?utm_source=chatgpt.com" title="LangGraph">LangChain Blog</a>)</p>
+<p><strong>要点清单：</strong></p>
+<ul>
+<li><p>LangGraph：编排&#x2F;状态机；LangChain：组件库&#x2F;执行单元。</p>
+</li>
+<li><p>强项：复杂分支、多 Agent、状态持久化与人工干预。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/persistence/?utm_source=chatgpt.com" title="LangGraph persistence - GitHub Pages">LangChain AI</a>)</p>
+</li>
+</ul>
+<hr>
+<h3 id="2-为什么用-Graph，而不是简单-Chain？"><a href="#2-为什么用-Graph，而不是简单-Chain？" class="headerlink" title="2) 为什么用 Graph，而不是简单 Chain？"></a>2) 为什么用 Graph，而不是简单 Chain？</h3><p><strong>标准回答：</strong><br>Chain 线性好上手，但<strong>分支、循环、并发依赖</strong>一复杂就难维护；Graph 把“谁先跑、跑完去哪儿、遇到条件怎么分路”全部显式化，<strong>可读、可测、可控</strong>，特别适合<strong>多 Agent 协作、工具调用决策、审阅环节（HITL）</strong>。LangGraph 还内置**条件边 <code>add_conditional_edges</code>、顺序片段 <code>add_sequence</code>**等语义化原语。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/reference/graphs/?utm_source=chatgpt.com" title="Graphs - GitHub Pages">LangChain AI</a>)</p>
+<hr>
+<h3 id="3-核心组件有哪些？（State-Node-Edge-Graph-Persistence）"><a href="#3-核心组件有哪些？（State-Node-Edge-Graph-Persistence）" class="headerlink" title="3) 核心组件有哪些？（State &#x2F; Node &#x2F; Edge &#x2F; Graph &#x2F; Persistence）"></a>3) 核心组件有哪些？（State &#x2F; Node &#x2F; Edge &#x2F; Graph &#x2F; Persistence）</h3><p><strong>标准回答（一句话版）：</strong></p>
+<ul>
+<li><p><strong>State</strong>：共享数据结构（可用 <code>TypedDict</code>&#x2F;Pydantic&#x2F;dataclass 定义），节点读写都基于它；支持<strong>Reducer</strong>合并多节点更新。</p>
+</li>
+<li><p><strong>Node</strong>：函数或 Runnable，输入 State、输出部分 State 更新。</p>
+</li>
+<li><p><strong>Edge</strong>：决定流转，含普通边与<strong>条件边</strong>。</p>
+</li>
+<li><p><strong>Graph</strong>：把节点和边编成可编译&#x2F;可执行的工作流。</p>
+</li>
+<li><p><strong>Persistence</strong>：通过 <strong>checkpointer</strong> 为每步打快照到 <code>thread</code>，支持<strong>长记忆、人工中断&#x2F;恢复、时间回溯与容错</strong>。(<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/use-graph-api?utm_source=chatgpt.com" title="Use the graph API - Docs by LangChain">LangChain 文档</a>, <a target="_blank" rel="noopener" href="https://medium.com/towardsdev/built-with-langgraph-4-components-d26701f7d16d?utm_source=chatgpt.com" title="Built with LangGraph! #4: Components | by Okan Yenigün">Medium</a>, <a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/reference/graphs/?utm_source=chatgpt.com" title="Graphs - GitHub Pages">LangChain AI</a>)</p>
+</li>
+</ul>
+<hr>
+<h3 id="4-什么是-Agentic-Workflow？举例"><a href="#4-什么是-Agentic-Workflow？举例" class="headerlink" title="4) 什么是 Agentic Workflow？举例"></a>4) 什么是 Agentic Workflow？举例</h3><p><strong>标准回答：</strong><br>Agentic Workflow 是把<strong>智能体的思考-行动-反思</strong>过程用<strong>可控的图结构</strong>表达：例如“研究员 Agent→工具检索→验证 Agent→人审→汇总 Agent”，每步的输入输出与路径选择都由 State&#x2F;Edge 管理，并可在任一点<strong>中断等待人审</strong>后继续。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/human_in_the_loop/?utm_source=chatgpt.com" title="LangGraph&#39;s human-in-the-loop - Overview">LangChain AI</a>)</p>
+<hr>
+<h1 id="二、机制与实现（进阶）"><a href="#二、机制与实现（进阶）" class="headerlink" title="二、机制与实现（进阶）"></a><strong>二、机制与实现（进阶）</strong></h1><h3 id="1-State-与传统-Memory-有何不同？"><a href="#1-State-与传统-Memory-有何不同？" class="headerlink" title="1) State 与传统 Memory 有何不同？"></a>1) State 与传统 Memory 有何不同？</h3><p><strong>标准回答：</strong><br>传统 Memory 多是会话“黑盒”拼接；<strong>LangGraph 的 State 是显式模式化的应用状态</strong>，可按键（渠道）细粒度更新，并用 <strong>Reducer</strong> 决定合并策略（覆盖&#x2F;累加&#x2F;去重）。这让<strong>可观测性、可测试性、并发合并</strong>成为一等公民。(<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/use-graph-api?utm_source=chatgpt.com" title="Use the graph API - Docs by LangChain">LangChain 文档</a>, <a target="_blank" rel="noopener" href="https://medium.com/towardsdev/built-with-langgraph-4-components-d26701f7d16d?utm_source=chatgpt.com" title="Built with LangGraph! #4: Components | by Okan Yenigün">Medium</a>)</p>
+<p><strong>极简定义示例：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> TypedDict, Annotated</span><br><span class="line"><span class="keyword">import</span> operator</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">State</span>(<span class="title class_ inherited__">TypedDict</span>):</span><br><span class="line">    <span class="comment"># 消息按列表累加（多节点并发写入也能合并）</span></span><br><span class="line">    messages: Annotated[<span class="built_in">list</span>, operator.add]</span><br></pre></td></tr></table></figure>
+
+<p>（TypedDict&#x2F;Reducer 的思路见官方与实践文章。）(<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/use-graph-api?utm_source=chatgpt.com" title="Use the graph API - Docs by LangChain">LangChain 文档</a>, <a target="_blank" rel="noopener" href="https://medium.com/%40koreymstafford/langgraph-state-basics-f2852b315849?utm_source=chatgpt.com" title="LangGraph State Basics">Medium</a>)</p>
+<hr>
+<h3 id="2-如何添加节点？节点如何收-返数据？"><a href="#2-如何添加节点？节点如何收-返数据？" class="headerlink" title="2) 如何添加节点？节点如何收&#x2F;返数据？"></a>2) 如何添加节点？节点如何收&#x2F;返数据？</h3><p><strong>标准回答：</strong><br>用 <code>StateGraph(StateSchema)</code> 创建图；<code>add_node(name, fn)</code> 注册节点；节点函数 <strong>接收 State</strong>、<strong>返回部分 State 更新</strong>；<code>add_edge/ add_sequence</code> 定义流转；编译后 <code>app.invoke(input, config)</code> 执行。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langgraph.graph <span class="keyword">import</span> StateGraph, END</span><br><span class="line"></span><br><span class="line">builder = StateGraph(State)</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">draft</span>(<span class="params">state: State</span>): <span class="keyword">return</span> &#123;<span class="string">&quot;messages&quot;</span>: [<span class="string">&quot;drafted&quot;</span>]&#125;</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">review</span>(<span class="params">state: State</span>): <span class="keyword">return</span> &#123;<span class="string">&quot;messages&quot;</span>: [<span class="string">&quot;reviewed&quot;</span>]&#125;</span><br><span class="line"></span><br><span class="line">builder.add_node(<span class="string">&quot;draft&quot;</span>, draft)</span><br><span class="line">builder.add_node(<span class="string">&quot;review&quot;</span>, review)</span><br><span class="line">builder.add_edge(<span class="string">&quot;draft&quot;</span>, <span class="string">&quot;review&quot;</span>)</span><br><span class="line">builder.add_edge(<span class="string">&quot;review&quot;</span>, END)</span><br><span class="line">app = builder.<span class="built_in">compile</span>()</span><br><span class="line">app.invoke(&#123;<span class="string">&quot;messages&quot;</span>: []&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>（API 语义参考文档。）(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/reference/graphs/?utm_source=chatgpt.com" title="Graphs - GitHub Pages">LangChain AI</a>)</p>
+<hr>
+<h3 id="3-If-Else-条件分支怎么做？"><a href="#3-If-Else-条件分支怎么做？" class="headerlink" title="3) If-Else 条件分支怎么做？"></a>3) If-Else 条件分支怎么做？</h3><p><strong>标准回答：</strong><br>用 <code>add_conditional_edges(start, router, mapping)</code>；<code>router(state)</code> 返回映射里的分支键。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">route</span>(<span class="params">state: State</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;approve&quot;</span> <span class="keyword">if</span> state.get(<span class="string">&quot;score&quot;</span>, <span class="number">0</span>) &gt;= <span class="number">0.8</span> <span class="keyword">else</span> <span class="string">&quot;revise&quot;</span></span><br><span class="line"></span><br><span class="line">builder.add_conditional_edges(</span><br><span class="line">    <span class="string">&quot;judge&quot;</span>, route, &#123;<span class="string">&quot;approve&quot;</span>: <span class="string">&quot;publish&quot;</span>, <span class="string">&quot;revise&quot;</span>: <span class="string">&quot;rewrite&quot;</span>&#125;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>（条件边是 LangGraph 的一等公民。）(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/reference/graphs/?utm_source=chatgpt.com" title="Graphs - GitHub Pages">LangChain AI</a>, <a target="_blank" rel="noopener" href="https://medium.com/ai-agents/langgraph-for-beginners-part-3-conditional-edges-16a3aaad9f31?utm_source=chatgpt.com" title="LangGraph for Beginners, Part 3: Conditional Edges">Medium</a>, <a target="_blank" rel="noopener" href="https://dev.to/jamesli/advanced-langgraph-implementing-conditional-edges-and-tool-calling-agents-3pdn?utm_source=chatgpt.com" title="Implementing Conditional Edges and Tool-Calling Agents">DEV Community</a>)</p>
+<hr>
+<h3 id="4-长对话记忆-循环执行如何实现？"><a href="#4-长对话记忆-循环执行如何实现？" class="headerlink" title="4) 长对话记忆 &#x2F; 循环执行如何实现？"></a>4) 长对话记忆 &#x2F; 循环执行如何实现？</h3><p><strong>标准回答：</strong><br>依靠<strong>显式 State + Reducer</strong>保存上下文，并用 Edge 实现<strong>回边</strong>或<strong>停止条件</strong>；对于超长会话与跨会话记忆，启用 <strong>checkpointer</strong> 将状态写入 <code>thread</code>，每次用同一 <code>thread_id</code> 继续。若需人审环节，用 <strong>interrupt</strong> 暂停并恢复。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/persistence/?utm_source=chatgpt.com" title="LangGraph persistence - GitHub Pages">LangChain AI</a>)</p>
+<hr>
+<h3 id="5-如何持久化执行状态？为何有意义？"><a href="#5-如何持久化执行状态？为何有意义？" class="headerlink" title="5) 如何持久化执行状态？为何有意义？"></a>5) 如何持久化执行状态？为何有意义？</h3><p><strong>标准回答：</strong><br>在 <code>compile</code> 传入 checkpointer（如 <code>MemorySaver</code>&#x2F;<code>SqliteSaver</code>），系统<strong>每个超步（super-step）<strong>都会快照到 <code>thread</code>，随后可</strong>回放、恢复、分叉试验</strong>，实现<strong>人机协同（HITL）</strong>、<strong>容错</strong>与<strong>时间旅行</strong>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langgraph.checkpoint <span class="keyword">import</span> MemorySaver  <span class="comment"># 或 SqliteSaver(...)</span></span><br><span class="line">cp = MemorySaver()</span><br><span class="line">app = builder.<span class="built_in">compile</span>(checkpointer=cp)</span><br><span class="line">config = &#123;<span class="string">&quot;configurable&quot;</span>: &#123;<span class="string">&quot;thread_id&quot;</span>: <span class="string">&quot;u123&quot;</span>&#125;&#125;</span><br><span class="line">app.invoke(&#123;<span class="string">&quot;messages&quot;</span>: []&#125;, config=config)</span><br></pre></td></tr></table></figure>
+
+<p>（持久化与线程语义见官方概念页与 JS 版文档说明。）(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/persistence/?utm_source=chatgpt.com" title="LangGraph persistence - GitHub Pages">LangChain AI</a>)</p>
+<hr>
+<h1 id="三、应用与思考（专家）"><a href="#三、应用与思考（专家）" class="headerlink" title="三、应用与思考（专家）"></a><strong>三、应用与思考（专家）</strong></h1><h3 id="1-多智能体系统如何用-LangGraph-表达？"><a href="#1-多智能体系统如何用-LangGraph-表达？" class="headerlink" title="1) 多智能体系统如何用 LangGraph 表达？"></a>1) 多智能体系统如何用 LangGraph 表达？</h3><p><strong>标准回答（结构化）：</strong></p>
+<ul>
+<li><p><strong>节点划分</strong>：<code>Researcher</code>（检索&#x2F;起草）→ <code>Verifier</code>（事实核验&#x2F;引用补全）→ <code>Synthesizer</code>（结构化输出）。</p>
+</li>
+<li><p><strong>关键状态</strong>：<code>messages</code>、<code>facts</code>、<code>citations</code>、<code>tools_logs</code>；对 <code>messages</code> 采用累加 Reducer。</p>
+</li>
+<li><p><strong>边逻辑</strong>：Verifier 评分低于阈值→ 回到 Researcher；高于阈值→ Synthesizer。</p>
+</li>
+<li><p><strong>HITL</strong>：在发布前 <strong>interrupt</strong> 等待人审。</p>
+</li>
+<li><p><strong>工具位</strong>：统一用 <code>ToolNode</code> 执行检索&#x2F;计算工具，降低节点对工具适配成本。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/how-tos/tool-calling/?utm_source=chatgpt.com" title="Call tools - GitHub Pages">LangChain AI</a>)</p>
+</li>
+</ul>
+<hr>
+<h3 id="2-科学计算-实验流程自动化中，相比传统编排的优势？"><a href="#2-科学计算-实验流程自动化中，相比传统编排的优势？" class="headerlink" title="2) 科学计算&#x2F;实验流程自动化中，相比传统编排的优势？"></a>2) 科学计算&#x2F;实验流程自动化中，相比传统编排的优势？</h3><p><strong>标准回答：</strong></p>
+<ul>
+<li><p><strong>语义更贴近“推理-行动”</strong>：把 LLM 的决策、工具调用与验收环节显式化；</p>
+</li>
+<li><p><strong>细粒度可观测</strong>：State&#x2F;Reducer 让每一步的输入输出可追溯；</p>
+</li>
+<li><p><strong>HITL 与可回溯</strong>：checkpointer 支持“暂停-审阅-继续”和<strong>时间旅行</strong>；</p>
+</li>
+<li><p><strong>复杂分支更自然</strong>：条件边&#x2F;循环优雅表达实验分叉与失败回退。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/persistence/?utm_source=chatgpt.com" title="LangGraph persistence - GitHub Pages">LangChain AI</a>)</p>
+</li>
+</ul>
+<hr>
+<h3 id="3-与状态机（State-Machine）的相似之处？"><a href="#3-与状态机（State-Machine）的相似之处？" class="headerlink" title="3) 与状态机（State Machine）的相似之处？"></a>3) 与状态机（State Machine）的相似之处？</h3><p><strong>标准回答：</strong><br>二者都以<strong>状态 + 转移</strong>为核心：节点像“状态处理器”，边是“转移函数”，条件边对应“守卫条件”。不同在于 LangGraph 的状态可<strong>结构化&#x2F;可合并</strong>，并内置<strong>快照&#x2F;回放</strong>与<strong>人审中断</strong>。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/persistence/?utm_source=chatgpt.com" title="LangGraph persistence - GitHub Pages">LangChain AI</a>)</p>
+<hr>
+<h3 id="4-可扩展性挑战与对策"><a href="#4-可扩展性挑战与对策" class="headerlink" title="4) 可扩展性挑战与对策"></a>4) 可扩展性挑战与对策</h3><p><strong>标准回答：</strong></p>
+<ul>
+<li><p><strong>图规模增长</strong>：强约束命名与模块化子图；</p>
+</li>
+<li><p><strong>并发与一致性</strong>：为并发写入的键设计合适 <strong>Reducer</strong>（累加&#x2F;去重&#x2F;优先级）；</p>
+</li>
+<li><p><strong>工具爆炸</strong>：收敛到 <code>ToolNode</code> + 统一工具接口；</p>
+</li>
+<li><p><strong>可观测性</strong>：事件日志+线程快照；</p>
+</li>
+<li><p><strong>团队协作</strong>：约定 State 模式与边命名规范，建立“设计评审”清单。(<a target="_blank" rel="noopener" href="https://medium.com/towardsdev/built-with-langgraph-4-components-d26701f7d16d?utm_source=chatgpt.com" title="Built with LangGraph! #4: Components | by Okan Yenigün">Medium</a>)</p>
+</li>
+</ul>
+<hr>
+<h1 id="四、追问速答（拉扯细节）"><a href="#四、追问速答（拉扯细节）" class="headerlink" title="四、追问速答（拉扯细节）"></a><strong>四、追问速答（拉扯细节）</strong></h1><h3 id="1-能否与-LangChain-工具库结合？怎么做？"><a href="#1-能否与-LangChain-工具库结合？怎么做？" class="headerlink" title="1) 能否与 LangChain 工具库结合？怎么做？"></a>1) 能否与 LangChain 工具库结合？怎么做？</h3><p><strong>速答：</strong><br>可以。<strong>推荐用 <code>ToolNode</code></strong>：让工具调用成为一个标准节点，输入&#x2F;输出都走 State（通常是 <code>messages</code> 通道），兼容 LangChain 的工具与 ReAct 策略。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/how-tos/tool-calling/?utm_source=chatgpt.com" title="Call tools - GitHub Pages">LangChain AI</a>, <a target="_blank" rel="noopener" href="https://python.langchain.com/docs/concepts/tool_calling/?utm_source=chatgpt.com" title="Tool calling">LangChain</a>)</p>
+<hr>
+<h3 id="2-支持异步-并发吗？"><a href="#2-支持异步-并发吗？" class="headerlink" title="2) 支持异步&#x2F;并发吗？"></a>2) 支持异步&#x2F;并发吗？</h3><p><strong>速答：</strong><br>LangGraph 的图本身支持<strong>多起点依赖收敛</strong>（一个节点可等多个前驱完成）与<strong>并行分支</strong>；在实现层可用异步 Runnable&#x2F;外部并行执行，最后通过 <strong>Reducer</strong> 合并到同一 State 键。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/reference/graphs/?utm_source=chatgpt.com" title="Graphs - GitHub Pages">LangChain AI</a>, <a target="_blank" rel="noopener" href="https://medium.com/towardsdev/built-with-langgraph-4-components-d26701f7d16d?utm_source=chatgpt.com" title="Built with LangGraph! #4: Components | by Okan Yenigün">Medium</a>)</p>
+<hr>
+<h3 id="3-节点失败时如何做容错？"><a href="#3-节点失败时如何做容错？" class="headerlink" title="3) 节点失败时如何做容错？"></a>3) 节点失败时如何做容错？</h3><p><strong>速答（工程化建议）：</strong></p>
+<ul>
+<li><p><strong>分层重试</strong>：节点内重试 + 图级回退边；</p>
+</li>
+<li><p><strong>幂等设计</strong>：节点按“输入 State→输出增量”保证可重放；</p>
+</li>
+<li><p><strong>持久化恢复</strong>：依赖 checkpointer 从最近快照恢复继续；</p>
+</li>
+<li><p><strong>人审兜底</strong>：关键节点前后放 <code>interrupt</code>。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/persistence/?utm_source=chatgpt.com" title="LangGraph persistence - GitHub Pages">LangChain AI</a>)</p>
+</li>
+</ul>
+<hr>
+<h3 id="4-与-Prefect-Airflow-的差异与优势？"><a href="#4-与-Prefect-Airflow-的差异与优势？" class="headerlink" title="4) 与 Prefect&#x2F;Airflow 的差异与优势？"></a>4) 与 Prefect&#x2F;Airflow 的差异与优势？</h3><p><strong>速答：</strong></p>
+<ul>
+<li><p>Prefect&#x2F;Airflow 更偏<strong>批式&#x2F;数据工程 DAG</strong>；</p>
+</li>
+<li><p>LangGraph 专注 <strong>LLM&#x2F;Agent 推理-行动回路</strong>（条件边、工具调用、HITL、对话记忆、时间旅行等是一等能力）。如要 ETL&#x2F;调度选 Prefect&#x2F;Airflow；要<strong>智能体流程</strong>选 LangGraph。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/concepts/persistence/?utm_source=chatgpt.com" title="LangGraph persistence - GitHub Pages">LangChain AI</a>)</p>
+</li>
+</ul>
+<hr>
+<h1 id="五、30-秒口播版（面试开场可直接说）"><a href="#五、30-秒口播版（面试开场可直接说）" class="headerlink" title="五、30 秒口播版（面试开场可直接说）"></a><strong>五、30 秒口播版（面试开场可直接说）</strong></h1><blockquote>
+<p>“我把 LangGraph 当作<strong>面向智能体的状态机</strong>。它在 LangChain 之上，用 <strong>State&#x2F;Node&#x2F;Edge</strong> 把复杂分支、循环和工具调用显式化；用 <strong>checkpointer</strong> 把每步状态快照到 <code>thread</code>，从而支持<strong>长记忆、人工中断&#x2F;恢复与时间旅行</strong>。实现上我会用 <code>add_node / add_edge / add_conditional_edges</code> 编排流程、用 <code>Reducer</code> 合并并发写入；多智能体场景下把检索、验证、汇总拆成节点，低分回路重写，高分发布，并在关键点 <code>interrupt</code> 走人审。相比传统 DAG 编排，LangGraph 对 <strong>LLM 推理-行动</strong>链路的表达更自然、可观测也更强。” (<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/reference/graphs/?utm_source=chatgpt.com" title="Graphs - GitHub Pages">LangChain AI</a>)</p>
+</blockquote>
+<hr>
+<h1 id="六、加分点（可主动抛出）"><a href="#六、加分点（可主动抛出）" class="headerlink" title="六、加分点（可主动抛出）"></a><strong>六、加分点（可主动抛出）</strong></h1><ul>
+<li><p><strong>人-机协作</strong>：熟练使用 <code>interrupt</code> 做审批与回溯分叉。(<a target="_blank" rel="noopener" href="https://changelog.langchain.com/announcements/interrupt-simplifying-human-in-the-loop-agents?utm_source=chatgpt.com" title="&#96;interrupt&#96;: Simplifying human-in-the-loop agents">changelog.langchain.com</a>)</p>
+</li>
+<li><p><strong>工具调用最佳实践</strong>：统一 <code>ToolNode</code>，把工具当“副作用节点”。(<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/how-tos/tool-calling/?utm_source=chatgpt.com" title="Call tools - GitHub Pages">LangChain AI</a>)</p>
+</li>
+<li><p><strong>State 设计</strong>：为并发量身定制 Reducer（累加&#x2F;去重&#x2F;优先级），并把关键指标（score、citations）单独成键，便于路由与审计。(<a target="_blank" rel="noopener" href="https://medium.com/towardsdev/built-with-langgraph-4-components-d26701f7d16d?utm_source=chatgpt.com" title="Built with LangGraph! #4: Components | by Okan Yenigün">Medium</a>)</p>
+</li>
+</ul>
+<hr>
+<p>如果你愿意，我可以把这份回答<strong>重排成一页面试 Cheetsheet（中英关键词 + 要点导图）</strong>，打印前贴在桌边，一眼就能捋顺全场思路。你只要点头，我立刻整理好。</p>
+
+</article>
+    
+    <div class="trm-reward">
+        
+            <span class="trm-reward-btn trm-glow" onclick='var qr = document.getElementById("qr"); qr.style.display = (qr.style.display === "none") ? "block" : "none";'>
+                <i class="iconfont fas fa-hand-holding-usd"></i>
+            </span>
+        
+        <p class="trm-reward-comment">Support me with a coffee?</p>
+        <div id="qr" style="display:none;">
+            
+                <div style="display:inline-block">
+                    <a rel="noopener noreferrer" href='/img/alipay.jpg' target='_blank' >
+                       <img src="/img/alipay.jpg" alt="alipay" loading="lazy">
+                    </a>
+                    <p>alipay</p>
+                </div>
+            
+        </div>
+    </div>
+
+    
+
+</div>
+<div class="trm-post-next-prev row">
+    <div class="col-lg-12">
+        <!-- title -->
+        <h5 class="trm-title-with-divider">
+            其他文章
+            <span data-number="02"></span>
+        </h5>
+    </div>
+    
+        <div class="col-lg-6">
+    <div class="trm-blog-card trm-scroll-animation">
+        <a href="/2025/08/22/LangChain/" class="trm-cover-frame trm-anima-link">
+            
+            
+                <img alt="cover" class="no-fancybox" src="/img/bg4.png">
+            
+        </a>
+        
+        <div class="trm-card-descr">
+            <div class="trm-label trm-category trm-mb-20">
+                <a href=" /categories/Technique/">
+                    Technique
+                </a>
+            </div>
+            <h5>
+                <a href="/2025/08/22/LangChain/" class="trm-anima-link">
+                    LangChain
+                </a>
+            </h5>
+            <div class="trm-divider trm-mb-20 trm-mt-20"></div>
+            <ul class="trm-card-data trm-label">
+                <li>25/08/22</li>
+                <li>11:11</li>
+                
+                
+            </ul>
+        </div>
+    </div>
+</div>
+    
+    
+        <div class="col-lg-6">
+    <div class="trm-blog-card trm-scroll-animation">
+        <a href="/2025/08/16/LoRA%20(Low-Rank%20Adaptation)/" class="trm-cover-frame trm-anima-link">
+            
+            
+                <img alt="cover" class="no-fancybox" src="/img/bg4.png">
+            
+        </a>
+        
+        <div class="trm-card-descr">
+            <div class="trm-label trm-category trm-mb-20">
+                <a href=" /categories/Technique/">
+                    Technique
+                </a>
+            </div>
+            <h5>
+                <a href="/2025/08/16/LoRA%20(Low-Rank%20Adaptation)/" class="trm-anima-link">
+                    LoRA (Low-Rank Adaptation)
+                </a>
+            </h5>
+            <div class="trm-divider trm-mb-20 trm-mt-20"></div>
+            <ul class="trm-card-data trm-label">
+                <li>25/08/16</li>
+                <li>11:11</li>
+                
+                
+            </ul>
+        </div>
+    </div>
+</div>
+    
+</div>
+
+    
+
+
+
+                    <div class="trm-divider footer-divider"></div>
+
+                    <!-- footer -->
+                    <footer class="trm-footer-card trm-scroll-animation">
+
+    
+
+    
+
+    
+        <div class="trm-footer-item">
+            <span>
+                由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 驱动 v7.3.0
+            </span>
+            <span class="footer-separator" data-separator=" | "></span>
+            <span> 
+                主题 - 
+                <a rel="noopener" href='https://github.com/MaLuns/hexo-theme-async' target='_blank'>Async</a>
+                v2.2.6
+            </span>
+        </div>
+      
+
+    
+        <div class="trm-footer-item blog-run-long"></div>
+     
+
+     
+</footer>
+                    <!-- footer end -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+            <!-- body end -->
+
+            
+
+    <div id="post-toc" class="trm-post-toc">
+      <div class="trm-post-toc-header">
+        目录导航
+				<span id="post-toc-top">
+					置顶
+				</span>
+      </div>
+      <div class="trm-post-toc-content">
+        <ol class="trm-toc"><li class="trm-toc-item trm-toc-level-1" title="一、基础理解（必考）"><a rel="nofollow" class="trm-toc-link" href="#一、基础理解（必考）"><span class="trm-toc-number">1.</span> <span class="trm-toc-text">一、基础理解（必考）</span></a><ol class="trm-toc-child"><li class="trm-toc-item trm-toc-level-3" title="1) LangGraph 是什么？与 LangChain 的关系？"><a rel="nofollow" class="trm-toc-link" href="#1-LangGraph-是什么？与-LangChain-的关系？"><span class="trm-toc-number">1.0.1.</span> <span class="trm-toc-text">1) LangGraph 是什么？与 LangChain 的关系？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="2) 为什么用 Graph，而不是简单 Chain？"><a rel="nofollow" class="trm-toc-link" href="#2-为什么用-Graph，而不是简单-Chain？"><span class="trm-toc-number">1.0.2.</span> <span class="trm-toc-text">2) 为什么用 Graph，而不是简单 Chain？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="3) 核心组件有哪些？（State &#x2F; Node &#x2F; Edge &#x2F; Graph &#x2F; Persistence）"><a rel="nofollow" class="trm-toc-link" href="#3-核心组件有哪些？（State-Node-Edge-Graph-Persistence）"><span class="trm-toc-number">1.0.3.</span> <span class="trm-toc-text">3) 核心组件有哪些？（State &#x2F; Node &#x2F; Edge &#x2F; Graph &#x2F; Persistence）</span></a></li><li class="trm-toc-item trm-toc-level-3" title="4) 什么是 Agentic Workflow？举例"><a rel="nofollow" class="trm-toc-link" href="#4-什么是-Agentic-Workflow？举例"><span class="trm-toc-number">1.0.4.</span> <span class="trm-toc-text">4) 什么是 Agentic Workflow？举例</span></a></li></ol></li></ol></li><li class="trm-toc-item trm-toc-level-1" title="二、机制与实现（进阶）"><a rel="nofollow" class="trm-toc-link" href="#二、机制与实现（进阶）"><span class="trm-toc-number">2.</span> <span class="trm-toc-text">二、机制与实现（进阶）</span></a><ol class="trm-toc-child"><li class="trm-toc-item trm-toc-level-3" title="1) State 与传统 Memory 有何不同？"><a rel="nofollow" class="trm-toc-link" href="#1-State-与传统-Memory-有何不同？"><span class="trm-toc-number">2.0.1.</span> <span class="trm-toc-text">1) State 与传统 Memory 有何不同？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="2) 如何添加节点？节点如何收&#x2F;返数据？"><a rel="nofollow" class="trm-toc-link" href="#2-如何添加节点？节点如何收-返数据？"><span class="trm-toc-number">2.0.2.</span> <span class="trm-toc-text">2) 如何添加节点？节点如何收&#x2F;返数据？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="3) If-Else 条件分支怎么做？"><a rel="nofollow" class="trm-toc-link" href="#3-If-Else-条件分支怎么做？"><span class="trm-toc-number">2.0.3.</span> <span class="trm-toc-text">3) If-Else 条件分支怎么做？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="4) 长对话记忆 &#x2F; 循环执行如何实现？"><a rel="nofollow" class="trm-toc-link" href="#4-长对话记忆-循环执行如何实现？"><span class="trm-toc-number">2.0.4.</span> <span class="trm-toc-text">4) 长对话记忆 &#x2F; 循环执行如何实现？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="5) 如何持久化执行状态？为何有意义？"><a rel="nofollow" class="trm-toc-link" href="#5-如何持久化执行状态？为何有意义？"><span class="trm-toc-number">2.0.5.</span> <span class="trm-toc-text">5) 如何持久化执行状态？为何有意义？</span></a></li></ol></li></ol></li><li class="trm-toc-item trm-toc-level-1" title="三、应用与思考（专家）"><a rel="nofollow" class="trm-toc-link" href="#三、应用与思考（专家）"><span class="trm-toc-number">3.</span> <span class="trm-toc-text">三、应用与思考（专家）</span></a><ol class="trm-toc-child"><li class="trm-toc-item trm-toc-level-3" title="1) 多智能体系统如何用 LangGraph 表达？"><a rel="nofollow" class="trm-toc-link" href="#1-多智能体系统如何用-LangGraph-表达？"><span class="trm-toc-number">3.0.1.</span> <span class="trm-toc-text">1) 多智能体系统如何用 LangGraph 表达？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="2) 科学计算&#x2F;实验流程自动化中，相比传统编排的优势？"><a rel="nofollow" class="trm-toc-link" href="#2-科学计算-实验流程自动化中，相比传统编排的优势？"><span class="trm-toc-number">3.0.2.</span> <span class="trm-toc-text">2) 科学计算&#x2F;实验流程自动化中，相比传统编排的优势？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="3) 与状态机（State Machine）的相似之处？"><a rel="nofollow" class="trm-toc-link" href="#3-与状态机（State-Machine）的相似之处？"><span class="trm-toc-number">3.0.3.</span> <span class="trm-toc-text">3) 与状态机（State Machine）的相似之处？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="4) 可扩展性挑战与对策"><a rel="nofollow" class="trm-toc-link" href="#4-可扩展性挑战与对策"><span class="trm-toc-number">3.0.4.</span> <span class="trm-toc-text">4) 可扩展性挑战与对策</span></a></li></ol></li></ol></li><li class="trm-toc-item trm-toc-level-1" title="四、追问速答（拉扯细节）"><a rel="nofollow" class="trm-toc-link" href="#四、追问速答（拉扯细节）"><span class="trm-toc-number">4.</span> <span class="trm-toc-text">四、追问速答（拉扯细节）</span></a><ol class="trm-toc-child"><li class="trm-toc-item trm-toc-level-3" title="1) 能否与 LangChain 工具库结合？怎么做？"><a rel="nofollow" class="trm-toc-link" href="#1-能否与-LangChain-工具库结合？怎么做？"><span class="trm-toc-number">4.0.1.</span> <span class="trm-toc-text">1) 能否与 LangChain 工具库结合？怎么做？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="2) 支持异步&#x2F;并发吗？"><a rel="nofollow" class="trm-toc-link" href="#2-支持异步-并发吗？"><span class="trm-toc-number">4.0.2.</span> <span class="trm-toc-text">2) 支持异步&#x2F;并发吗？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="3) 节点失败时如何做容错？"><a rel="nofollow" class="trm-toc-link" href="#3-节点失败时如何做容错？"><span class="trm-toc-number">4.0.3.</span> <span class="trm-toc-text">3) 节点失败时如何做容错？</span></a></li><li class="trm-toc-item trm-toc-level-3" title="4) 与 Prefect&#x2F;Airflow 的差异与优势？"><a rel="nofollow" class="trm-toc-link" href="#4-与-Prefect-Airflow-的差异与优势？"><span class="trm-toc-number">4.0.4.</span> <span class="trm-toc-text">4) 与 Prefect&#x2F;Airflow 的差异与优势？</span></a></li></ol></li></ol></li><li class="trm-toc-item trm-toc-level-1" title="五、30 秒口播版（面试开场可直接说）"><a rel="nofollow" class="trm-toc-link" href="#五、30-秒口播版（面试开场可直接说）"><span class="trm-toc-number">5.</span> <span class="trm-toc-text">五、30 秒口播版（面试开场可直接说）</span></a></li><li class="trm-toc-item trm-toc-level-1" title="六、加分点（可主动抛出）"><a rel="nofollow" class="trm-toc-link" href="#六、加分点（可主动抛出）"><span class="trm-toc-number">6.</span> <span class="trm-toc-text">六、加分点（可主动抛出）</span></a></li></ol>
+      </div>
+    </div>
+
+            
+<div class="trm-fixed-container">
+    
+        <div class="trm-fixed-btn post-toc-btn" data-title="目录">
+            <i class="iconfont fas fa-th-list"></i>
+        </div>
+    
+    
+        <div class="trm-fixed-btn" data-title="阅读模式" onclick="asyncFun.switchReadMode()">
+            <i class="iconfont fas fa-book-reader"></i>
+        </div>
+    
+    
+        <div class="trm-fixed-btn hidden-md" data-title="单栏和双栏切换" onclick="asyncFun.switchSingleColumn()">
+            <i class="iconfont fas fa-arrows-alt-h"></i>
+        </div>
+    
+    <div id="trm-back-top" class="trm-fixed-btn" data-title="回到顶部">
+        <i class="iconfont fas fa-arrow-up"></i>
+    </div>
+</div>
+        </div>
+      </div>
+      <!-- scroll container end -->
+  </div>
+  <!-- app wrapper end -->
+
+  
+  <!-- Plugin -->
+
+
+
+
+    
+    
+<script src="https://unpkg.com/@fancyapps/ui@4.0/dist/fancybox.umd.js"></script>
+
+    
+
+    
+        <script src="/js/plugins/typing.js?v=2.2.6"></script>
+    
+
+    
+
+    <!-- 数学公式 -->
+    
+
+    <!-- 评论插件 -->
+    
+        
+
+        
+    
+
+		
+
+
+
+
+    <!-- Service Worker -->
+    
+    <!-- baidu push -->
+    
+
+
+<script id="async-script" src="/js/main.js?v=2.2.6"></script>
+
+<!-- CDN -->
+
+
+    
+
+    
+
+    
+
+
+
+</body>
+
+</html>
